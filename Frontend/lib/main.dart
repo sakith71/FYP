@@ -29,7 +29,7 @@ class ObstacleDetectorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           primary: Colors.greenAccent,
           secondary: Colors.amberAccent,
         ),
@@ -45,11 +45,11 @@ class _NoCameraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: Colors.black,
-        body: const Center(
+        body: Center(
           child: Text(
             'No camera available on this device.',
             style: TextStyle(color: Colors.white70, fontSize: 18),

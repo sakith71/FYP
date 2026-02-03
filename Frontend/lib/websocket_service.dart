@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert' show json;
-import 'package:websocket_channel/websocket_channel.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// Manages a single WebSocket connection to FastAPI /ws/predict.
 ///
