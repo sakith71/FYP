@@ -52,7 +52,7 @@ ALLOWED_EXTENSIONS = {"image/jpeg", "image/png", "image/gif", "image/bmp", "imag
 MAX_FILE_SIZE_MB = 10
 MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 
-MODEL_PATH = os.getenv("MODEL_PATH", "model.keras")
+MODEL_PATH = os.getenv("MODEL_PATH", "finetune_CNN_Model.keras")
 
 # -----------------------
 # LOAD MODEL

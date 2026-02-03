@@ -1,0 +1,24 @@
+# Core FastAPI & server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# ML/AI
+tensorflow>=2.13.0
+keras>=2.13.0
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# Text-to-Speech (install at least one)
+# Option 1: Google TTS (online, free, good quality)
+gTTS>=2.4.0
+
+# Option 2: Edge TTS (Microsoft, online, free, best quality)
+edge-tts>=6.1.0
+
+# Option 3: pyttsx3 (offline, platform-dependent)
+# Uncomment if you need offline TTS
+# pyttsx3>=2.90
+
+# Audio processing (optional, for advanced features)
+# pydub>=0.25.1
