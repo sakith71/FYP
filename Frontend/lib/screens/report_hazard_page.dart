@@ -296,7 +296,7 @@ class _ReportHazardPageState extends State<ReportHazardPage> {
                               BoxShadow(
                                 color:
                                     (_isRecording ? Colors.red : Colors.black)
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),
