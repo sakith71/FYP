@@ -5,6 +5,8 @@ import '../widgets/detection_widgets/audio_output_card.dart';
 import '../widgets/detection_widgets/note_card.dart';
 import '../widgets/detection_widgets/camera_preview.dart';
 import '../widgets/detection_widgets/gesture_card.dart';
+import '../widgets/detection_widgets/feedback_severity_overlay.dart';
+import '../models/feedback_severity.dart';
 import 'report_hazard_page.dart';
 import 'history_logs_page.dart';
 import 'error_states_page.dart';
@@ -70,6 +72,23 @@ class _DetectionActivePageState extends State<DetectionActivePage> {
         MaterialPageRoute(builder: (context) => const ErrorStatesPage()),
       );
     }
+  }
+
+  /// Show feedback based on distance to detected object (in meters)
+  void showFeedbackForDistance(double distanceInMeters) {
+    final severity = FeedbackSeverity.fromDistance(distanceInMeters);
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (context) => FeedbackSeverityOverlay(
+        severity: severity,
+        objectDistance: distanceInMeters,
+        onDismiss: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
   }
 
   @override

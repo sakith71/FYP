@@ -47,5 +47,11 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs access to the camera to detect obstacles and hazards for visually impaired users.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to your location to record the GPS coordinates when reporting hazards.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs access to your location to record the GPS coordinates when reporting hazards.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to the microphone to record hazard reports.</string>
 </dict>
 </plist>

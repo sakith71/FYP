@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/error_state_widgets/error_card.dart';
 import '../widgets/error_state_widgets/warning_card.dart';
+import '../widgets/error_state_widgets/permission_card.dart';
 import '../services/system_status_service.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:vibration/vibration.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ErrorStatesPage extends StatefulWidget {
   const ErrorStatesPage({super.key});
@@ -21,6 +23,8 @@ class _ErrorStatesPageState extends State<ErrorStatesPage> {
   String _cameraStatusMessage = 'Checking...';
   bool _isLoading = true;
   String? _batteryError;
+  PermissionStatus? _microphonePermission;
+  bool _isRequestingPermission = false;
 
   @override
   void initState() {
@@ -47,12 +51,14 @@ class _ErrorStatesPageState extends State<ErrorStatesPage> {
       final batteryStateResult = await _systemStatusService.getBatteryState();
       final cameraAvailable = await _systemStatusService.isCameraAvailable();
       final cameraStatus = await _systemStatusService.getCameraStatus();
+      final micPermission = await Permission.microphone.status;
 
       setState(() {
         _batteryLevel = batteryLevel;
         _batteryState = batteryStateResult.toString().split('.').last;
         _isCameraAvailable = cameraAvailable;
         _cameraStatusMessage = cameraStatus;
+        _microphonePermission = micPermission;
         _isLoading = false;
       });
 
@@ -83,6 +89,85 @@ class _ErrorStatesPageState extends State<ErrorStatesPage> {
           backgroundColor: _isCameraAvailable ? Colors.green : Colors.red,
         ),
       );
+    }
+  }
+
+  Future<void> _requestMicrophonePermission() async {
+    // Prevent concurrent permission requests
+    if (_isRequestingPermission) return;
+
+    setState(() {
+      _isRequestingPermission = true;
+    });
+
+    try {
+      final status = await Permission.microphone.request();
+
+      if (!mounted) return;
+
+      setState(() {
+        _microphonePermission = status;
+        _isRequestingPermission = false;
+      });
+
+      if (status.isGranted) {
+        await _flutterTts.speak(
+          'Microphone permission granted. Voice commands are now enabled.',
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Microphone permission granted'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } else if (status.isDenied) {
+        await _flutterTts.speak('Microphone permission was denied.');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Microphone permission denied'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } else if (status.isPermanentlyDenied) {
+        await _flutterTts.speak(
+          'Microphone permission is permanently denied. Please enable it in app settings.',
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Microphone permission permanently denied. Open app settings?',
+              ),
+              backgroundColor: Colors.orange,
+              action: SnackBarAction(
+                label: 'Settings',
+                onPressed: () {
+                  openAppSettings();
+                },
+              ),
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isRequestingPermission = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error requesting permission: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -231,33 +316,29 @@ class _ErrorStatesPageState extends State<ErrorStatesPage> {
                   ),
                 const SizedBox(height: 16),
                 // Permission Required
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[300]!, width: 2),
-                    borderRadius: BorderRadius.circular(4),
-                    color: Colors.grey[50],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.shield_outlined,
-                        size: 32,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          'Permission Required',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[800],
+                PermissionCard(
+                  title: 'Permission Required',
+                  description:
+                      'VoxEye needs access to your Microphone for voice commands.',
+                  permissionType: 'Voice Command',
+                  voiceCommandText:
+                      'Spoken explanation plays BEFORE system dialog appears',
+                  onAllow: _requestMicrophonePermission,
+                  onDeny: () {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Microphone permission is required for voice commands',
                           ),
+                          backgroundColor: Colors.red,
                         ),
-                      ),
-                    ],
-                  ),
+                      );
+                    }
+                  },
+                  isGranted:
+                      _microphonePermission != null &&
+                      _microphonePermission!.isGranted,
                 ),
               ],
             ),

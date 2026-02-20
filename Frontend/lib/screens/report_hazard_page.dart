@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/audio_service.dart';
+import '../services/system_status_service.dart';
 
 class ReportHazardPage extends StatefulWidget {
   const ReportHazardPage({super.key});
@@ -10,9 +11,32 @@ class ReportHazardPage extends StatefulWidget {
 
 class _ReportHazardPageState extends State<ReportHazardPage> {
   final AudioService _audioService = AudioService();
+  final SystemStatusService _systemStatusService = SystemStatusService();
+
   bool _isRecording = false;
   bool _hasRecorded = false;
   String _statusText = '"Describe the hazard after the beep."';
+
+  // System capture tracking
+  bool _isCapturingAudio = false;
+  bool _isCapturingGPS = false;
+  bool _isCapturingTime = false;
+  String? _gpsLocation = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Request location permission on startup
+    _requestLocationPermission();
+  }
+
+  Future<void> _requestLocationPermission() async {
+    try {
+      await _systemStatusService.checkLocationPermission();
+    } catch (e) {
+      print('Error requesting location permission: $e');
+    }
+  }
 
   Future<void> _toggleRecording() async {
     if (_isRecording) {
@@ -23,6 +47,9 @@ class _ReportHazardPageState extends State<ReportHazardPage> {
           _isRecording = false;
           _hasRecorded = true;
           _statusText = 'Recording completed. Tap mic to re-record.';
+          _isCapturingAudio = false;
+          _isCapturingGPS = false;
+          _isCapturingTime = false;
         });
       }
     } else {
@@ -34,8 +61,17 @@ class _ReportHazardPageState extends State<ReportHazardPage> {
 
       final started = await _audioService.startRecording();
       if (started) {
+        // START CAPTURING SYSTEM DATA
+        final locationData = await _systemStatusService.getLocation();
+
         setState(() {
           _isRecording = true;
+          _isCapturingAudio = true;
+          _isCapturingGPS = locationData['latitude'] != 0.0;
+          _isCapturingTime = true;
+          _gpsLocation =
+              'Lat: ${locationData['latitude']?.toStringAsFixed(4) ?? 'N/A'}, '
+              'Lng: ${locationData['longitude']?.toStringAsFixed(4) ?? 'N/A'}';
           _statusText = 'Recording... Tap to stop or say "Cancel"';
         });
       } else {
@@ -96,6 +132,147 @@ class _ReportHazardPageState extends State<ReportHazardPage> {
                   color: Colors.black,
                 ),
               ),
+              // System Capture Indicators
+              if (_isRecording)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      border: Border.all(color: Colors.blue, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SYSTEM CAPTURES:',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[900],
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // Audio Capture
+                            Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: _isCapturingAudio
+                                        ? Colors.red
+                                        : Colors.grey[300],
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.mic,
+                                    size: 20,
+                                    color: _isCapturingAudio
+                                        ? Colors.white
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Audio',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: _isCapturingAudio
+                                        ? Colors.red
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // GPS Capture
+                            Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: _isCapturingGPS
+                                        ? Colors.green
+                                        : Colors.grey[300],
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.location_on,
+                                    size: 20,
+                                    color: _isCapturingGPS
+                                        ? Colors.white
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'GPS',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: _isCapturingGPS
+                                        ? Colors.green
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // Time Capture
+                            Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: _isCapturingTime
+                                        ? Colors.blue
+                                        : Colors.grey[300],
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.access_time,
+                                    size: 20,
+                                    color: _isCapturingTime
+                                        ? Colors.white
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Time',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: _isCapturingTime
+                                        ? Colors.blue
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        if (_isCapturingGPS && _gpsLocation != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              _gpsLocation!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.blue[900],
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               // Entire middle section clickable
               Expanded(
                 child: GestureDetector(
@@ -197,7 +374,7 @@ class _ReportHazardPageState extends State<ReportHazardPage> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            'GPS Location & Audio automatically captured',
+                            'Works offline — syncs when connected',
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey[800],

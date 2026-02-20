@@ -1,11 +1,71 @@
 import 'package:battery_plus/battery_plus.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 class SystemStatusService {
   final Battery _battery = Battery();
 
-  // Get current battery level (0-100)
+  // Get current location (latitude, longitude)
+  Future<Map<String, double>> getLocation() async {
+    try {
+      // Check location permission
+      final permission = await checkLocationPermission();
+      if (!permission) {
+        return {'latitude': 0.0, 'longitude': 0.0};
+      }
+
+      // Get current position
+      final position = await Geolocator.getCurrentPosition(
+        forceAndroidLocationManager: true,
+      );
+
+      return {'latitude': position.latitude, 'longitude': position.longitude};
+    } catch (e) {
+      print('Error getting location: $e');
+      return {'latitude': 0.0, 'longitude': 0.0};
+    }
+  }
+
+  // Check and request location permission
+  Future<bool> checkLocationPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.whileInUse ||
+        permission == LocationPermission.always) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // Get location availability
+  Future<bool> isLocationServiceEnabled() async {
+    return await Geolocator.isLocationServiceEnabled();
+  }
+
+  // Get current timestamp as formatted string
+  String getCurrentTimeString() {
+    final now = DateTime.now();
+    return now.toString();
+  }
+
+  // Get current time as DateTime
+  DateTime getCurrentTime() {
+    return DateTime.now();
+  }
+
+  // Get formatted time for display (HH:mm:ss)
+  String getFormattedTime() {
+    final now = DateTime.now();
+    return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+  }
+
+  // Get battery level (0-100)
   Future<int> getBatteryLevel() async {
     try {
       return await _battery.batteryLevel;
