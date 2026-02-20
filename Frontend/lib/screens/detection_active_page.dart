@@ -129,7 +129,13 @@ class _DetectionActivePageState extends State<DetectionActivePage> {
         body: SafeArea(
           child: Column(
             children: [
-              const DetectionHeader(isSuccess: true),
+              DetectionHeader(
+                isSuccess: true,
+                onTap: () {
+                  // Show feedback severity for warning level (2 meters distance)
+                  showFeedbackForDistance(2.0);
+                },
+              ),
               const SizedBox(height: 16),
               const AudioOutputCard(
                 message: '"Obstacle ahead right, two meters."',
