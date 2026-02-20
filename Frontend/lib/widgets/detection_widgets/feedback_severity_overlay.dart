@@ -82,7 +82,7 @@ class _FeedbackSeverityOverlayState extends State<FeedbackSeverityOverlay>
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: widget.severity.color.withOpacity(0.3),
+                  color: widget.severity.color.withAlpha(76),
                   blurRadius: 20,
                   spreadRadius: 5,
                 ),
@@ -97,7 +97,7 @@ class _FeedbackSeverityOverlayState extends State<FeedbackSeverityOverlay>
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: widget.severity.color.withOpacity(0.1),
+                      color: widget.severity.color.withAlpha(25),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -130,10 +130,10 @@ class _FeedbackSeverityOverlayState extends State<FeedbackSeverityOverlay>
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: widget.severity.color.withOpacity(0.1),
+                      color: widget.severity.color.withAlpha(25),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: widget.severity.color.withOpacity(0.3),
+                        color: widget.severity.color.withAlpha(76),
                         ),
                       ),
                       child: Row(

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # -----------------------
 # CONFIG
 # -----------------------
-IMAGE_SIZE = (128, 128)  # Must match training
+IMAGE_SIZE = (224, 224)  # Must match training
 
 CLASS_NAMES = [
     "animals",

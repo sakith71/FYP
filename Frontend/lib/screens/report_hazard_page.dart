@@ -34,7 +34,7 @@ class _ReportHazardPageState extends State<ReportHazardPage> {
     try {
       await _systemStatusService.checkLocationPermission();
     } catch (e) {
-      print('Error requesting location permission: $e');
+      debugPrint('Error requesting location permission: $e');
     }
   }
 
@@ -296,7 +296,7 @@ class _ReportHazardPageState extends State<ReportHazardPage> {
                               BoxShadow(
                                 color:
                                     (_isRecording ? Colors.red : Colors.black)
-                                        .withOpacity(0.3),
+                                        .withAlpha(76),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),

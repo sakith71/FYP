@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -16,7 +17,7 @@ class AudioService {
       await _audioPlayer.stop();
       await _audioPlayer.play(AssetSource('sounds/beep-06.mp3'));
     } catch (e) {
-      print('Error playing beep: $e');
+      debugPrint('Error playing beep: $e');
     }
   }
 
@@ -37,7 +38,7 @@ class AudioService {
       // Check permission first
       final hasPermission = await checkMicrophonePermission();
       if (!hasPermission) {
-        print('Microphone permission denied');
+        debugPrint('Microphone permission denied');
         return false;
       }
 
@@ -59,12 +60,12 @@ class AudioService {
         );
 
         _isRecording = true;
-        print('Recording started: $_recordingPath');
+        debugPrint('Recording started: $_recordingPath');
         return true;
       }
       return false;
     } catch (e) {
-      print('Error starting recording: $e');
+      debugPrint('Error starting recording: $e');
       return false;
     }
   }
@@ -75,12 +76,12 @@ class AudioService {
       if (_isRecording) {
         final path = await _audioRecorder.stop();
         _isRecording = false;
-        print('Recording stopped: $path');
+        debugPrint('Recording stopped: $path');
         return path;
       }
       return null;
     } catch (e) {
-      print('Error stopping recording: $e');
+      debugPrint('Error stopping recording: $e');
       return null;
     }
   }
@@ -100,13 +101,13 @@ class AudioService {
           final file = File(path);
           if (await file.exists()) {
             await file.delete();
-            print('Recording cancelled and deleted');
+            debugPrint('Recording cancelled and deleted');
           }
         }
       }
       _recordingPath = null;
     } catch (e) {
-      print('Error cancelling recording: $e');
+      debugPrint('Error cancelling recording: $e');
     }
   }
 
@@ -115,7 +116,7 @@ class AudioService {
     try {
       await _audioPlayer.play(DeviceFileSource(path));
     } catch (e) {
-      print('Error playing recording: $e');
+      debugPrint('Error playing recording: $e');
     }
   }
 

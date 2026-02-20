@@ -22,7 +22,7 @@ class SystemStatusService {
 
       return {'latitude': position.latitude, 'longitude': position.longitude};
     } catch (e) {
-      print('Error getting location: $e');
+      // Use a logger or debugPrint in a real app
       return {'latitude': 0.0, 'longitude': 0.0};
     }
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../models/feedback_severity.dart';
@@ -5,6 +6,7 @@ import '../models/feedback_severity.dart';
 class FeedbackService {
   static final FeedbackService _instance = FeedbackService._internal();
   final FlutterTts _tts = FlutterTts();
+  bool _isTtsInitialized = false;
 
   FeedbackService._internal();
 
@@ -12,40 +14,56 @@ class FeedbackService {
     return _instance;
   }
 
-  Future<void> provideFeedback(FeedbackSeverity severity) async {
-    // Trigger vibration
-    await _triggerVibration(severity);
+  Future<void> _initTts() async {
+    if (_isTtsInitialized) return;
+    try {
+      await _tts.setLanguage("en-US");
+      await _tts.setSpeechRate(0.5);
+      await _tts.setVolume(1.0);
+      await _tts.setPitch(1.0);
+      _isTtsInitialized = true;
+    } catch (e) {
+      debugPrint('Error initializing TTS: $e');
+    }
+  }
 
-    // Provide audio feedback
-    await _speakMessage(severity);
+  Future<void> provideFeedback(FeedbackSeverity severity) async {
+    // Run both feedback types concurrently
+    await Future.wait([
+      _triggerVibration(severity),
+      _speakMessage(severity),
+    ]);
   }
 
   Future<void> _triggerVibration(FeedbackSeverity severity) async {
     try {
-      final canVibrate = await Vibration.hasVibrator();
-      if (canVibrate == true) {
+      final hasVibrator = await Vibration.hasVibrator();
+      if (hasVibrator == true) {
         final pulseCount = severity.vibrationPulseCount;
-        const pulseDuration = 100; // milliseconds
-        const pauseDuration = 150; // milliseconds between pulses
 
+        // Construct pattern: [wait, vibrate, wait, vibrate, ...]
+        final pattern = <int>[];
         for (int i = 0; i < pulseCount; i++) {
-          await Vibration.vibrate(duration: pulseDuration);
-          if (i < pulseCount - 1) {
-            await Future.delayed(const Duration(milliseconds: pauseDuration));
-          }
+          pattern.add(i == 0 ? 0 : 150); // No wait for first pulse, 150ms for others
+          pattern.add(100); // 100ms vibration
         }
+
+        await Vibration.vibrate(pattern: pattern);
       }
     } catch (e) {
-      print('Error triggering vibration: $e');
+      debugPrint('Error triggering vibration: $e');
     }
   }
 
   Future<void> _speakMessage(FeedbackSeverity severity) async {
     try {
+      if (!_isTtsInitialized) {
+        await _initTts();
+      }
       await _tts.stop();
       await _tts.speak(severity.audioMessage);
     } catch (e) {
-      print('Error speaking message: $e');
+      debugPrint('Error speaking message: $e');
     }
   }
 

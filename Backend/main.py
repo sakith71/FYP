@@ -129,10 +129,17 @@ async def predict_image(file: UploadFile = File(...)):
     Basic image prediction without audio.
     Returns only text predictions.
     """
-    if file.content_type not in ALLOWED_MIME_TYPES:
+    # Validate content type (with fallback for missing headers)
+    content_type = file.content_type
+    if not content_type:
+        import mimetypes
+        content_type, _ = mimetypes.guess_type(file.filename or "")
+
+    if content_type not in ALLOWED_MIME_TYPES:
+        logger.warning("Rejected file with content_type: %s", content_type)
         return JSONResponse(
             status_code=400,
-            content={"error": f"Unsupported type '{file.content_type}'."},
+            content={"error": f"Unsupported type '{content_type}'. Allowed: {', '.join(ALLOWED_MIME_TYPES)}"},
         )
 
     contents = await file.read()
@@ -177,10 +184,17 @@ async def predict_with_audio(
             "audio_format": "mp3"
         }
     """
-    if file.content_type not in ALLOWED_MIME_TYPES:
+    # Validate content type
+    content_type = file.content_type
+    if not content_type:
+        import mimetypes
+        content_type, _ = mimetypes.guess_type(file.filename or "")
+
+    if content_type not in ALLOWED_MIME_TYPES:
+        logger.warning("Rejected file with content_type: %s", content_type)
         return JSONResponse(
             status_code=400,
-            content={"error": f"Unsupported type '{file.content_type}'."},
+            content={"error": f"Unsupported type '{content_type}'. Allowed: {', '.join(ALLOWED_MIME_TYPES)}"},
         )
 
     contents = await file.read()

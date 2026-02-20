@@ -81,7 +81,8 @@ def _generate_pyttsx3(text: str, rate: float = 1.0, pitch: float = 1.0) -> bytes
     engine.setProperty('rate', int(default_rate * rate))
     
     # Save to file temporarily (pyttsx3 doesn't support BytesIO directly)
-    temp_file = CACHE_DIR / f"temp_{os.getpid()}.mp3"
+    import uuid
+    temp_file = CACHE_DIR / f"temp_{uuid.uuid4().hex}.mp3"
     engine.save_to_file(text, str(temp_file))
     engine.runAndWait()
     

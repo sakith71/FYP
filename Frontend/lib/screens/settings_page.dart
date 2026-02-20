@@ -165,7 +165,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 14,
                     ),
-                    overlayColor: Colors.black.withOpacity(0.1),
+                    overlayColor: Colors.black.withAlpha(25),
                     trackHeight: 8,
                   ),
                   child: Slider(
